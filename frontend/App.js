@@ -2,25 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { StatusBar, SafeAreaView, StyleSheet, View, Text, useColorScheme as useSystemColorScheme } from 'react-native';
+import { StatusBar, StyleSheet, useColorScheme as useSystemColorScheme } from 'react-native';
 import { Provider as PaperProvider } from 'react-native-paper';
 
 // Import the main screen
 import HomeScreen from './src/screens/HomeScreen';
+import HistoryScreen from './src/screens/HistoryScreen'; // Add this import
 import { lightTheme, darkTheme } from './src/utils/theme';
-
-// Define placeholder screen for History
-function HistoryScreen() {
-  return (
-    <SafeAreaView style={styles.screen}>
-      <View style={styles.container}>
-        <MaterialCommunityIcons name="history" size={50} color="#888" />
-        <Text style={styles.title}>History</Text>
-        <Text style={styles.subtitle}>Your past soil analyses will appear here</Text>
-      </View>
-    </SafeAreaView>
-  );
-}
 
 const Tab = createBottomTabNavigator();
 
@@ -66,26 +54,17 @@ export default function App() {
             headerShown: false,
             tabBarStyle: {
               backgroundColor: theme.surface,
-              borderTopColor: isDarkMode ? theme.border : 'rgba(0,0,0,0.1)',
-              borderTopWidth: 0.5,
-              elevation: isDarkMode ? 0 : 8,
-              height: 60,
-              paddingVertical: 6,
+              borderTopColor: theme.border,
             },
             tabBarActiveTintColor: theme.primary,
-            tabBarInactiveTintColor: theme.textLight,
-            tabBarLabelStyle: {
-              fontSize: 12,
-              fontWeight: '500',
-              marginBottom: 4,
-            },
+            tabBarInactiveTintColor: theme.textSecondary,
           })}
         >
           <Tab.Screen 
-            name="Analyze" 
+            name="Home" 
             options={{
               tabBarIcon: ({ color, size }) => (
-                <MaterialCommunityIcons name="flask-outline" color={color} size={size} />
+                <MaterialCommunityIcons name="home" color={color} size={size} />
               ),
             }}
           >
@@ -94,14 +73,13 @@ export default function App() {
           
           <Tab.Screen 
             name="History" 
+            component={HistoryScreen} // Use component prop instead of render function
             options={{
               tabBarIcon: ({ color, size }) => (
                 <MaterialCommunityIcons name="history" color={color} size={size} />
               ),
             }}
-          >
-            {() => <HistoryScreen />}
-          </Tab.Screen>
+          />
         </Tab.Navigator>
       </NavigationContainer>
     </PaperProvider>
