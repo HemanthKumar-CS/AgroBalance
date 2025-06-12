@@ -12,9 +12,9 @@ from tensorflow.keras.models import load_model  # type: ignore
 warnings.filterwarnings("ignore")
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS
+CORS(app)
 
-# Load models and preprocessing objects (keep your existing code here)
+# Load models and preprocessing objects
 try:
     crop_model = load_model('./models/crop_model.keras')
     fertilizer_model = load_model('./models/fertilizer_model.keras')
@@ -302,9 +302,6 @@ def test_sensor_data():
             'success': False,
             'error': f"Failed to connect to sensor: {str(e)}"
         })
-
-
-# Ports listing endpoint
 
 
 @app.route('/list_ports', methods=['GET'])
