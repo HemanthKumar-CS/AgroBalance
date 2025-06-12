@@ -1,8 +1,13 @@
 // AgriculturalAssistant/src/api/apiService.js
 import axios from 'axios';
 
-// Your backend IP address and port
-const API_URL = 'http://192.168.82.66:5000';
+import { Platform } from "react-native";
+
+const API_URL =
+  Platform.OS === "web"
+    ? "http://localhost:5000"
+    : "http://192.168.x.x:5000";
+export default API_URL;
 
 // Validate sensor data before prediction
 const validateSensorData = (data) => {
