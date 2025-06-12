@@ -236,8 +236,6 @@ def read_soil_sensor():
         print(traceback.format_exc())
         return {'error': f'Sensor detection error: {str(e)}'}
 
-# Root endpoint
-
 
 @app.route('/', methods=['GET'])
 def home():
@@ -253,8 +251,6 @@ def home():
         }
     })
 
-# Original sensor endpoint
-
 
 @app.route('/read_sensor', methods=['GET'])
 def get_sensor_data():
@@ -263,21 +259,15 @@ def get_sensor_data():
         return jsonify({'success': False, 'error': sensor_data['error']})
     return jsonify({'success': True, 'data': sensor_data})
 
-# New test sensor endpoint
-
 
 @app.route('/test_sensor', methods=['GET'])
 def test_sensor_data():
     """Endpoint that provides sensor data with proper error indications"""
     try:
-        # Check if mock explicitly requested, but we'll ignore this and never use mock data
-        mock = request.args.get('mock', 'false').lower() == 'true'
-
         print("Attempting to read real sensor data...")
         sensor_data = read_soil_sensor()
 
         if 'error' not in sensor_data:
-            # Check if all values are very low (sensor not in soil)
             essential_params = ['N', 'P', 'K', 'Moisture']
             all_zero = all(sensor_data.get(param, 0) <
                            1 for param in essential_params)
@@ -287,6 +277,14 @@ def test_sensor_data():
                 return jsonify({
                     'success': False,
                     'error': 'Sensor readings too low. Please ensure sensor is inserted in soil.'
+                })
+
+            # Then apply the smarter soil detection
+            if not is_sensor_in_soil(sensor_data):
+                print(f"Invalid soil readings detected: {sensor_data}")
+                return jsonify({
+                    'success': False,
+                    'error': 'Sensor appears to be not inserted correctly into the soil. Please insert fully into soil.'
                 })
 
             print("Successfully read real sensor data")
@@ -423,6 +421,31 @@ def predict():
                 'amount': f"Error: {str(e)}"
             }
         })
+
+
+def is_sensor_in_soil(sensor_data):
+    """
+    Smart detection of whether sensor is in actual soil vs hands/air
+    Uses multiple parameters for more accurate detection
+    """
+    moisture = sensor_data.get('Moisture', 0)
+    ph = sensor_data.get('pH', 0)
+
+    # Main indicators that the sensor is NOT in soil:
+
+    # 1. pH below 3.0 is extremely rare in natural soils
+    #    Human skin typically reads pH 0-2 on these sensors
+    if ph < 3.0 and ph != 0:  # pH=0 might be a faulty reading we should ignore
+        print(f"Non-soil pH detected: {ph}")
+        return False
+
+    # 2. Moisture pattern - hand contact typically shows 5-12%
+    #    Well-inserted soil sensors usually read >15%
+    if moisture < 15.0 and moisture > 0:  # Only if moisture is actually being read
+        print(f"Low moisture detected: {moisture}%")
+        return False
+
+    return True
 
 
 if __name__ == '__main__':
